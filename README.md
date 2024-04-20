@@ -47,9 +47,9 @@ Uptown 4 train to Woodlawn in 6 minutes
 Downtown 6 train to Brooklyn Bridge-City Hall in 8 minutes
 ```
 
-## 2) Realtime accessiblity information
+## 2) Realtime accessibility information
 
-The MTA also exposes realtime accessibility information about elevator/escalator outages at their stations. In `e_02_realtime_accessibility.py` we access this data through a JSON adapter and compute some basic stats on the currenmt state of subway accessibility. 
+The MTA also exposes realtime accessibility information about elevator/escalator outages at their stations. In `e_02_realtime_accessibility.py` we access this data through a JSON adapter and compute some basic stats on the current state of subway accessibility. 
 
 ```
 >> python e_02_realtime_accessibility.py
