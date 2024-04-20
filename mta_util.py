@@ -34,3 +34,12 @@ TRANSFER_INFO_DF = pd.read_csv('data/transfers.txt')
 
 # Realtime elevator/escalator status
 ACCESSIBILITY_ENDPOINT = 'https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fnyct_ene.json'
+
+# Alert endpoints
+ALERT_ENDPOINTS = {
+    'bus': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fbus-alerts.json",
+    'mnr': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fmnr-alerts.json",
+    'lirr': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Flirr-alerts.json",
+    'subway': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts.json",
+    'all': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fall-alerts.json"
+}
