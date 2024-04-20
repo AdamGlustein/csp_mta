@@ -2,40 +2,16 @@
 from compiled_protobuf import gtfs_realtime_pb2
 
 import logging
-import pandas as pd
 import requests
 import time
 
 from csp.impl.pushadapter import PushInputAdapter
 from csp.impl.wiring import py_push_adapter_def
 from csp import ts
-from datetime import timedelta
 import threading
 import time
 
-'''
-Reference for NYCT Subway GTFS feed: https://new.mta.info/document/134521
-Reference for MTA LIRR/MetroNorth feed: https://raw.githubusercontent.com/OneBusAway/onebusaway-gtfs-realtime-api/master/src/main/proto/com/google/transit/realtime/gtfs-realtime-MTARR.proto
-'''
-
-LINE_TO_ENDPOINT = {
-    '1234567S': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
-    'ACE': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
-    'BDFM': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
-    'G': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
-    'JZ': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz",
-    'NQRW': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
-    'L': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
-    'SI': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si",
-    'LIRR': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/lirr%2Fgtfs-lirr",
-    'MNR': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/mnr%2Fgtfs-mnr"
-}
-
-MTA_FEED_UPDATE_TIME = timedelta(seconds=30)
-GTFS_DIRECTION = ['', 'Uptown', '', 'Downtown', '']
-
-# Stops: load into a dataframe
-STOP_INFO_DF = pd.read_csv('stops.txt', index_col='stop_id')
+from mta_util import *
 
 logging.basicConfig(level=logging.INFO)
 
