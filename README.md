@@ -1,12 +1,12 @@
 # csp_mta
 Realtime csp input adapter for the MTA's GTFS data feed. Feeds covered are all lines of the New York City subway, LIRR and Metro North railroads
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AdamGlustein/csp_mta/main?urlpath=lab)
+
 Setup:
 
 ```
-pip install csp
-pip install requests
-pip install protobuf
+pip install csp httpx protobuf
 ```
 
 # Example use:
@@ -49,7 +49,7 @@ Downtown 6 train to Brooklyn Bridge-City Hall in 8 minutes
 
 ## 2) Realtime accessibility information
 
-The MTA also exposes realtime accessibility information about elevator/escalator outages at their stations. In `e_02_realtime_accessibility.py` we access this data through a JSON adapter and compute some basic stats on the current state of subway accessibility. 
+The MTA also exposes realtime accessibility information about elevator/escalator outages at their stations. In `e_02_realtime_accessibility.py` we access this data through a JSON adapter and compute some basic stats on the current state of subway accessibility.
 
 ```
 >> python e_02_realtime_accessibility.py
@@ -63,7 +63,7 @@ Average Time per Outage: 139 days
 
 ## 3) Bus alert panel
 
-Alerts for all MTA services are published as both GTFS and JSON feeds. In `e_03_bus_alerts.py` we leverage the JSON feed to print all current bus alerts. 
+Alerts for all MTA services are published as both GTFS and JSON feeds. In `e_03_bus_alerts.py` we leverage the JSON feed to print all current bus alerts.
 
 ```
 >> python e_03_bus_alerts.py

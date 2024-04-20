@@ -1,12 +1,14 @@
 import threading
-from datetime import timedelta
-import json
 import time
-import requests
+from datetime import timedelta
 
+import httpx
+from csp import ts
 from csp.impl.pushadapter import PushInputAdapter
 from csp.impl.wiring import py_push_adapter_def
-from csp import ts
+
+__all__ = ("JSONInputAdapter",)
+
 
 class JSONAdapterImpl(PushInputAdapter):
     def __init__(self, endpoint, interval):
@@ -17,7 +19,7 @@ class JSONAdapterImpl(PushInputAdapter):
 
     def start(self, starttime, endtime):
         self._running = True
-        self._thread = threading.Thread(target=self._run)
+        self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
 
     def stop(self):
@@ -27,10 +29,11 @@ class JSONAdapterImpl(PushInputAdapter):
 
     def _run(self):
         while self._running:
-            response = requests.get(self._endpoint)
-            json_str = response.content.decode('utf-8')
-            json_dict = json.loads(json_str)
+            json_dict = httpx.get(self._endpoint).json()
             self.push_tick(json_dict)
             time.sleep(self._interval.total_seconds())
 
-JSONInputAdapter = py_push_adapter_def('JSONAdapter', JSONAdapterImpl, ts[object], endpoint=str, interval=timedelta)
+
+JSONInputAdapter = py_push_adapter_def(
+    "JSONAdapter", JSONAdapterImpl, ts[object], endpoint=str, interval=timedelta
+)
