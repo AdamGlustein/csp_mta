@@ -61,3 +61,20 @@ Realtime Accessible Stations: 110 of 472
 Average Time per Outage: 139 days
 ```
 
+## 3) Bus alert panel
+
+Alerts for all MTA services are published as both GTFS and JSON feeds. In `e_03_bus_alerts.py` we leverage the JSON feed to print all current bus alerts. 
+
+```
+>> python e_03_bus_alerts.py
+
+2024-04-20 16:04:17.556450 Realtime Alerts:
+-- B103: B25, B26, B38, B41 B52, and B103 buses may experience delays in the Downton Brooklyn area and will wait out any temporary closures
+
+-- B103: B25, B26, B38, B41, B52 and B103 stops on Joralemon St at Court St and Joralemon St at Adams St are closed
+
+-- B15: Eastbound B15 buses may experience delays near JFK AirTrain and will wait out any temporary closures
+
+-- B16: B16 stops on Ocean Ave between Parkside Ave and Empire Blvd, on Lincoln Rd, and Flatbush Ave at Ocean Ave will be closed
+...
+```
