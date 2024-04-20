@@ -3,46 +3,14 @@
 # You are invited to explore other MTA accessbility feeds, which are listed here: https://api.mta.info/#/EAndEFeeds
 
 from datetime import datetime, timedelta
-import threading
-import time
-import requests
-
-from csp.impl.pushadapter import PushInputAdapter
-from csp.impl.wiring import py_push_adapter_def
 from mta_util import *
-
-import json
+from JSONInputAdapter import JSONInputAdapter
 import csp
 
 class OutageStats(csp.Struct):
     num_elevators_out : int=0
     num_stations_no_longer_ADA_accessible : int=0
     average_downtime_per_outage : timedelta=timedelta(seconds=-1)
-
-class RTElevatorStatusAdapterImpl(PushInputAdapter):
-    def __init__(self):
-        self._thread = None
-        self._running = False
-
-    def start(self, starttime, endtime):
-        self._running = True
-        self._thread = threading.Thread(target=self._run)
-        self._thread.start()
-
-    def stop(self):
-        if self._running:
-            self._running = False
-            self._thread.join()
-
-    def _run(self):
-        while self._running:
-            response = requests.get(ACCESSIBILITY_ENDPOINT)
-            json_str = response.content.decode('utf-8')
-            json_dict = json.loads(json_str)
-            self.push_tick(json_dict)
-            time.sleep(MTA_FEED_UPDATE_TIME.total_seconds())
-
-RTElevatorStatusAdapter = py_push_adapter_def('RTElevatorStatusAdapter', RTElevatorStatusAdapterImpl, csp.ts[object])
 
 @csp.node
 def elevator_outages(json_feed: csp.ts[object]) -> csp.ts[OutageStats]:
@@ -74,7 +42,7 @@ def repr_accessibility_stats(stats: csp.ts[OutageStats]) -> csp.ts[str]:
 
 @csp.graph
 def realtime_accessibility_stats():
-    realtime_elevator_status = RTElevatorStatusAdapter()
+    realtime_elevator_status = JSONInputAdapter(ACCESSIBILITY_ENDPOINT, MTA_FEED_UPDATE_TIME)
     current_elevator_outages = elevator_outages(realtime_elevator_status)
     status = repr_accessibility_stats(current_elevator_outages)
     csp.print('Current Accessibility Status', status)
