@@ -18,7 +18,7 @@ __all__ = ("GTFSRealtimeInputAdapter",)
 
 
 class GTFSRealtimeAdapterImpl(PushInputAdapter):
-    def __init__(self, service, publish_raw_bytes=False):
+    def __init__(self, service, publish_raw_bytes):
         """Implementation for GTFS Realtime Adapter
 
         Args:

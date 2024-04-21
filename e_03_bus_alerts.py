@@ -23,7 +23,7 @@ def pretty_print_alerts(alerts: csp.ts[object]) -> csp.ts[str]:
 
 @csp.graph
 def get_alerts(endpoint: str):
-    alert_adapter = JSONRealtimeInputAdapter(endpoint, MTA_FEED_UPDATE_TIME)
+    alert_adapter = JSONRealtimeInputAdapter(endpoint, MTA_FEED_UPDATE_TIME, False)
     alert_panel = pretty_print_alerts(alert_adapter)
     csp.print("Realtime Alerts", alert_panel)
 

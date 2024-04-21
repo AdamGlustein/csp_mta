@@ -55,7 +55,7 @@ def repr_accessibility_stats(stats: csp.ts[OutageStats]) -> csp.ts[str]:
 @csp.graph
 def realtime_accessibility_stats():
     realtime_elevator_status = JSONRealtimeInputAdapter(
-        ACCESSIBILITY_ENDPOINT, MTA_FEED_UPDATE_TIME
+        ACCESSIBILITY_ENDPOINT, MTA_FEED_UPDATE_TIME, False
     )
     current_elevator_outages = elevator_outages(realtime_elevator_status)
     status = repr_accessibility_stats(current_elevator_outages)

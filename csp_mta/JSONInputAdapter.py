@@ -11,7 +11,7 @@ __all__ = ("JSONRealtimeInputAdapter",)
 
 
 class JSONRealtimeAdapterImpl(PushInputAdapter):
-    def __init__(self, endpoint, interval, publish_raw_bytes=False):
+    def __init__(self, endpoint, interval, publish_raw_bytes):
         self._endpoint = endpoint
         self._interval = interval
         self._raw = publish_raw_bytes

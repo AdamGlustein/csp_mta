@@ -87,7 +87,7 @@ def departure_board(platforms: List[Tuple[str, str]], N: int):
     """
     for service in platforms:
         stop_id, line = service
-        line_data = GTFSRealtimeInputAdapter(line)
+        line_data = GTFSRealtimeInputAdapter(line, False)
         trains_headed_for_station = filter_trains_headed_for_stop(line_data, stop_id)
         next_N_trains = next_N_trains_at_stop(trains_headed_for_station, stop_id, N)
         dep_str = csp.apply(
