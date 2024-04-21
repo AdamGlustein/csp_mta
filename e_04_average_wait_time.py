@@ -129,7 +129,7 @@ if __name__ == "__main__":
     std_wait = seconds = res["std"][-1][1]
     format_str = "%Y-%m-%d %H:%M:%S"
     print(
-        f'\nStation {STOP_INFO_DF.loc[args.stop_id, "stop_name"]}'+
-        f'\nBetween {start.strftime(format_str)} and {end.strftime(format_str)}' +
-        f'\nAverage wait time {format_time(mean_wait)} +/- {format_time(std_wait)}'
+        f'\nStation {STOP_INFO_DF.loc[args.stop_id, "stop_name"]}'
+        + f"\nBetween {start.strftime(format_str)} and {end.strftime(format_str)}"
+        + f"\nAverage wait time {format_time(mean_wait)} +/- {format_time(std_wait)}"
     )
