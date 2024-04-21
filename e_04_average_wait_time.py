@@ -6,6 +6,7 @@ from csp.adapters.parquet import ParquetReader
 from csp_mta import gtfs_realtime_pb2, STOP_INFO_DF
 
 from datetime import datetime, timedelta
+import pandas as pd
 
 
 @csp.node
@@ -87,6 +88,14 @@ def wait_time_distribution(filename: str, stop_id: str) -> csp.Outputs(
     return csp.output(mean=avg_wait_time, std=std_wait_time)
 
 
+def format_time(td):
+    minutes = round(td // 60)
+    seconds = round(int(td) - minutes * 60)
+    if minutes > 0:
+        return f"{minutes} min {seconds} s"
+    return f"{seconds} s"
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -105,8 +114,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    start = datetime(2024, 4, 21, 15)
-    end = datetime(2024, 4, 21, 16)
+    start = datetime(2024, 4, 21, 17)
+    end = datetime(2024, 4, 21, 18)
     res = csp.run(
         wait_time_distribution,
         args.filename,
@@ -115,6 +124,12 @@ if __name__ == "__main__":
         endtime=end,
     )
 
+    # Cumulative stats at station at the end of the window
+    mean_wait = seconds = res["mean"][-1][1]
+    std_wait = seconds = res["std"][-1][1]
+    format_str = "%Y-%m-%d %H:%M:%S"
     print(
-        f'\nAt station {STOP_INFO_DF.loc[args.stop_id, "stop_name"]}: wait time {res["mean"]} +/- {res["std"]}'
+        f'\nStation {STOP_INFO_DF.loc[args.stop_id, "stop_name"]}'+
+        f'\nBetween {start.strftime(format_str)} and {end.strftime(format_str)}' +
+        f'\nAverage wait time {format_time(mean_wait)} +/- {format_time(std_wait)}'
     )
