@@ -1,8 +1,8 @@
 import logging
 import threading
 import time
-
 import httpx
+
 from csp import ts
 from csp.impl.pushadapter import PushInputAdapter
 from csp.impl.wiring import py_push_adapter_def
@@ -14,13 +14,16 @@ logging.basicConfig(level=logging.INFO)
 
 __all__ = ("GTFSRealtimeInputAdapter",)
 
+# Realtime push adapter
+
 
 class GTFSRealtimeAdapterImpl(PushInputAdapter):
-    def __init__(self, service):
+    def __init__(self, service, publish_raw_bytes=False):
         """Implementation for GTFS Realtime Adapter
 
         Args:
             service (str): services to subscribe to
+            publish_raw_bytes (bool): used for recording data
         """
         if service not in LINE_TO_ENDPOINT:
             raise ValueError(
@@ -31,6 +34,7 @@ class GTFSRealtimeAdapterImpl(PushInputAdapter):
         self._logger.info(f"Initializing GTFS-realtime adapter for service: {service}")
 
         self._service = service
+        self._raw = publish_raw_bytes
         self._endpoint = LINE_TO_ENDPOINT[service]
         self._thread = None
         self._running = False
@@ -57,12 +61,19 @@ class GTFSRealtimeAdapterImpl(PushInputAdapter):
             Tick out a list of GTFS messages for all services subscribed to
             """
             response = httpx.get(self._endpoint)
-            feed = gtfs_realtime_pb2.FeedMessage()
-            feed.ParseFromString(response.content)
-            self.push_tick(feed)
+            if self._raw:
+                self.push_tick(response.content)  # raw bytes for recording
+            else:
+                feed = gtfs_realtime_pb2.FeedMessage()
+                feed.ParseFromString(response.content)
+                self.push_tick(feed)
             time.sleep(MTA_FEED_UPDATE_TIME.total_seconds())
 
 
 GTFSRealtimeInputAdapter = py_push_adapter_def(
-    "GTFSRealtimeInputAdapter", GTFSRealtimeAdapterImpl, ts[object], service=str
+    "GTFSRealtimeInputAdapter",
+    GTFSRealtimeAdapterImpl,
+    ts[object],
+    service=str,
+    publish_raw_bytes=bool,
 )

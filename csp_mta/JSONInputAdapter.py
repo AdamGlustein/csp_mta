@@ -7,13 +7,14 @@ from csp import ts
 from csp.impl.pushadapter import PushInputAdapter
 from csp.impl.wiring import py_push_adapter_def
 
-__all__ = ("JSONInputAdapter",)
+__all__ = ("JSONRealtimeInputAdapter",)
 
 
-class JSONAdapterImpl(PushInputAdapter):
-    def __init__(self, endpoint, interval):
+class JSONRealtimeAdapterImpl(PushInputAdapter):
+    def __init__(self, endpoint, interval, publish_raw_bytes=False):
         self._endpoint = endpoint
         self._interval = interval
+        self._raw = publish_raw_bytes
         self._thread = None
         self._running = False
 
@@ -29,11 +30,19 @@ class JSONAdapterImpl(PushInputAdapter):
 
     def _run(self):
         while self._running:
-            json_dict = httpx.get(self._endpoint).json()
-            self.push_tick(json_dict)
+            response = httpx.get(self._endpoint)
+            if self._raw:
+                self.push_tick(response.content)  # raw bytes for recording
+            else:
+                self.push_tick(response.json())
             time.sleep(self._interval.total_seconds())
 
 
-JSONInputAdapter = py_push_adapter_def(
-    "JSONAdapter", JSONAdapterImpl, ts[object], endpoint=str, interval=timedelta
+JSONRealtimeInputAdapter = py_push_adapter_def(
+    "JSONRealtimeAdapter",
+    JSONRealtimeAdapterImpl,
+    ts[object],
+    endpoint=str,
+    interval=timedelta,
+    publish_raw_bytes=bool,
 )

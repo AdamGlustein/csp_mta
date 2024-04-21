@@ -10,7 +10,7 @@ from csp_mta import (
     ADA_ACCESSIBLE_STATIONS,
     MTA_FEED_UPDATE_TIME,
     TOTAL_SUBWAY_STATIONS,
-    JSONInputAdapter,
+    JSONRealtimeInputAdapter,
 )
 
 
@@ -54,7 +54,7 @@ def repr_accessibility_stats(stats: csp.ts[OutageStats]) -> csp.ts[str]:
 
 @csp.graph
 def realtime_accessibility_stats():
-    realtime_elevator_status = JSONInputAdapter(
+    realtime_elevator_status = JSONRealtimeInputAdapter(
         ACCESSIBILITY_ENDPOINT, MTA_FEED_UPDATE_TIME
     )
     current_elevator_outages = elevator_outages(realtime_elevator_status)

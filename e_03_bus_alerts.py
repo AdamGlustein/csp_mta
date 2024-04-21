@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import csp
 
-from csp_mta import ALERT_ENDPOINTS, MTA_FEED_UPDATE_TIME, JSONInputAdapter
+from csp_mta import ALERT_ENDPOINTS, MTA_FEED_UPDATE_TIME, JSONRealtimeInputAdapter
 
 
 @csp.node
@@ -23,7 +23,7 @@ def pretty_print_alerts(alerts: csp.ts[object]) -> csp.ts[str]:
 
 @csp.graph
 def get_alerts(endpoint: str):
-    alert_adapter = JSONInputAdapter(endpoint, MTA_FEED_UPDATE_TIME)
+    alert_adapter = JSONRealtimeInputAdapter(endpoint, MTA_FEED_UPDATE_TIME)
     alert_panel = pretty_print_alerts(alert_adapter)
     csp.print("Realtime Alerts", alert_panel)
 
