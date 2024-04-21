@@ -83,15 +83,15 @@ Alerts for all MTA services are published as both GTFS and JSON feeds. In `e_03_
 Since the MTA does not directly provide historical data, we include a script `record_data.py` which we used to record incoming GTFS/JSON messages and write them to a Parquet file. Then, we read back in the Parquet file to expose historical feed messages to the graph. We can use this historical data to gather insights and test realtime apps. A basic example of this is `e_04_average_wait_time.py`, which computes the average wait time for an hour of recorded data on April 21st, 2024. The data was recorded for the MTA's main subway feed, which covers the 1/2/3, 4/5/6, 7 and S lines. 
 
 ```
->> python e_04_average_wait_time.py --filename csp_mta/data/example_recorded_data.parquet --stop_id 635
+>> python e_04_average_wait_time.py --filename csp_mta/data/example_recorded_data.parquet --stop_id 720
 
-Station 14 St-Union Sq
+Station Hunters Point Av
 Between 2024-04-21 17:00:00 and 2024-04-21 18:00:00
-Average wait time 4 min 7 s +/- 3 min 22 s
+Average wait time 1 min 24 s +/- 15 s
 
->> python e_04_average_wait_time.py --filename csp_mta/data/example_recorded_data.parquet --stop_id 123
+>> python e_04_average_wait_time.py --filename csp_mta/data/example_recorded_data.parquet --stop_id 721
 
-Station 72 St
+Station Vernon Blvd-Jackson Av
 Between 2024-04-21 17:00:00 and 2024-04-21 18:00:00
-Average wait time 2 min 6 s +/- 59 s
+Average wait time 1 min 22 s +/- 45 s
 ```
