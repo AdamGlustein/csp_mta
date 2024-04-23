@@ -90,9 +90,3 @@ We also leverage `csp.stats` in this example to compute the hourly mean wait tim
 
 ![ex](https://github.com/AdamGlustein/csp_mta/assets/55991383/9c66497c-7d3e-436a-a90f-d3826d4b28e5)
 
-```
->> python e_04_average_wait_time.py --filename recorded_data/recording_12h/ACE_20240421_1854.parquet --stop_id E01
-```
-
-![ex2](https://github.com/AdamGlustein/csp_mta/assets/55991383/b962aaed-1762-46dd-9274-3487410b1cd4)
-
