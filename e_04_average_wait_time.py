@@ -6,7 +6,12 @@ from csp.adapters.parquet import ParquetReader
 from csp_mta import gtfs_realtime_pb2, STOP_INFO_DF
 
 from datetime import datetime, timedelta
+from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
+
+import pytz
+ET = pytz.timezone('America/New_York')
 
 
 @csp.node
@@ -25,10 +30,7 @@ def get_stop_time_at_station(entity, stop_id, direction):
         stop_time_updates = entity.trip_update.stop_time_update
         for update in stop_time_updates:
             # could be N or S
-            if (
-                update.stop_id == stop_id + direction
-                and datetime.fromtimestamp(update.arrival.time) >= datetime.now()
-            ):
+            if update.stop_id == stop_id + direction:
                 return update.arrival.time
     return None
 
@@ -46,7 +48,14 @@ def wait_time(feed_msgs: csp.ts[object], stop_id: str) -> csp.Outputs(
         for direction in ("N", "S"):
             t = get_stop_time_at_station(entity, stop_id, direction)
             if t is not None:
-                wait = datetime.fromtimestamp(t) - datetime.now()
+                # Some careful notes on timing in csp...
+                # The stop time that we load from file is in Eastern time since that's what the MTA reports it as
+                # But csp.now() and the engine time (which is recorded in our parquet files) uses UTC!
+                # Thus, be very careful about comparing them, making sure to localize first
+
+                stop_time = ET.localize(datetime.fromtimestamp(t))
+                current_time = pytz.timezone('UTC').localize(csp.now())
+                wait = stop_time - current_time
                 if wait >= timedelta(0):
                     if direction == "N":
                         n_min = min(n_min, wait)
@@ -58,7 +67,7 @@ def wait_time(feed_msgs: csp.ts[object], stop_id: str) -> csp.Outputs(
 
 
 @csp.graph
-def wait_time_distribution(filename: str, stop_id: str) -> csp.Outputs(
+def hourly_wait_times(filename: str, stop_id: str) -> csp.Outputs(
     mean=csp.ts[float], std=csp.ts[float]
 ):
     raw_bytes = ParquetReader(
@@ -66,7 +75,6 @@ def wait_time_distribution(filename: str, stop_id: str) -> csp.Outputs(
     ).subscribe_all(typ=str, field_map="msg")
     gtfs = raw_bytes_to_gtfs_message(raw_bytes)
     wait_times = wait_time(gtfs, stop_id)
-
     # Calculate the average and standard deviation for each bucket
     bidirectional_wait_times = csp.flatten(
         [
@@ -74,27 +82,22 @@ def wait_time_distribution(filename: str, stop_id: str) -> csp.Outputs(
             csp.apply(wait_times.downtown_wait, lambda x: x.total_seconds(), float),
         ]
     )
+
+    trigger = csp.timer(timedelta(hours=1), True)
     avg_wait_time = csp.stats.mean(
         bidirectional_wait_times,
-        interval=None,
+        interval=timedelta(hours=1),
         min_window=None,
+        trigger=trigger,
     )
     std_wait_time = csp.stats.stddev(
         bidirectional_wait_times,
-        interval=None,
+        interval=timedelta(hours=1),
         min_window=None,
+        trigger=trigger,
     )
 
     return csp.output(mean=avg_wait_time, std=std_wait_time)
-
-
-def format_time(td):
-    minutes = round(td // 60)
-    seconds = round(int(td) - minutes * 60)
-    if minutes > 0:
-        return f"{minutes} min {seconds} s"
-    return f"{seconds} s"
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -114,22 +117,32 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    start = datetime(2024, 4, 21, 17)
-    end = datetime(2024, 4, 21, 18)
+    start = datetime(2024, 4, 21, 19)
+    start = ET.localize(start)
+    end = datetime(2024, 4, 22, 6)
+    end = ET.localize(end)
+
     res = csp.run(
-        wait_time_distribution,
+        hourly_wait_times,
         args.filename,
         args.stop_id,
         starttime=start,
         endtime=end,
     )
 
-    # Cumulative stats at station at the end of the window
-    mean_wait = seconds = res["mean"][-1][1]
-    std_wait = seconds = res["std"][-1][1]
+    # Hourly wait times over the window (7PM Sun night to 6AM Monday morning)
+    mean_wait_times_by_hour = np.array(res["mean"])[:,1] / 60 # convert to minutes
+    std_wait_times_by_hour = np.array(res["std"])[:,1] / 60
+
+    # Plotting the average and standard deviation
     format_str = "%Y-%m-%d %H:%M:%S"
-    print(
-        f'\nStation {STOP_INFO_DF.loc[args.stop_id, "stop_name"]}'
-        + f"\nBetween {start.strftime(format_str)} and {end.strftime(format_str)}"
-        + f"\nAverage wait time {format_time(mean_wait)} +/- {format_time(std_wait)}"
-    )
+    date_range = pd.date_range(start='2024-04-21-19:00', end='2024-04-22-05:00', freq='h')
+    plt.errorbar(date_range, mean_wait_times_by_hour, yerr=std_wait_times_by_hour, fmt='o-', color='b', ecolor='lightgray', capsize=4)
+    
+    plt.title(f'Station {STOP_INFO_DF.loc[args.stop_id, "stop_name"]} between {start.strftime(format_str)} and {end.strftime(format_str)}')
+    plt.xlabel('time')
+    plt.ylabel('average wait (minutes)')
+    
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.show()
