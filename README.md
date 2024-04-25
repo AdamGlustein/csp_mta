@@ -85,7 +85,7 @@ Since the MTA does not directly provide historical data, we include a script `re
 We also leverage `csp.stats` in this example to compute the hourly mean wait times and standard deviation. `csp.stats` is a useful module for rolling time-series computations and contains almost all statistics functions. Lastly, we display the data using `matplotlib`. 
 
 ```
->> python e_04_average_wait_time.py --filename recorded_data/recording_12h/1234567S_20240421_1854.parquet --stop_id 230
+>>  python e_04_average_wait_time.py --filename recorded_data/2024-04-21-18\:54_to_2024-04-22-06\:54/1234567S_20240421_1854.parquet --stop_id 230
 ```
 
 ![ex](https://github.com/AdamGlustein/csp_mta/assets/55991383/9c66497c-7d3e-436a-a90f-d3826d4b28e5)
