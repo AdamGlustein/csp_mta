@@ -1,8 +1,8 @@
 import threading
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-import httpx
+import requests
 from csp import ts
 from csp.impl.pushadapter import PushInputAdapter
 from csp.impl.wiring import py_push_adapter_def
@@ -13,12 +13,13 @@ __all__ = ("JSONRealtimeInputAdapter",)
 class JSONRealtimeAdapterImpl(PushInputAdapter):
     def __init__(self, endpoint, interval, publish_raw_bytes):
         self._endpoint = endpoint
-        self._interval = interval
+        self._interval = interval.total_seconds()
         self._raw = publish_raw_bytes
         self._thread = None
         self._running = False
 
     def start(self, starttime, endtime):
+        self._endtime = endtime
         self._running = True
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
@@ -30,12 +31,17 @@ class JSONRealtimeAdapterImpl(PushInputAdapter):
 
     def _run(self):
         while self._running:
-            response = httpx.get(self._endpoint)
+            response = requests.get(self._endpoint)
             if self._raw:
                 self.push_tick(response.content)  # raw bytes for recording
             else:
                 self.push_tick(response.json())
-            time.sleep(self._interval.total_seconds())
+            sleep_interval = min(
+                # edge case where we exit prematurely
+                (self._endtime-datetime.utcnow()).total_seconds(), 
+                self._interval
+            )
+            time.sleep(sleep_interval)
 
 
 JSONRealtimeInputAdapter = py_push_adapter_def(
