@@ -6,7 +6,7 @@ Realtime csp input adapter for the MTA's GTFS data feed. Feeds covered are all l
 Setup:
 
 ```
-pip install csp httpx pandas protobuf
+pip install csp requests pandas protobuf
 ```
 
 # Example use:
